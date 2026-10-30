@@ -1,0 +1,24 @@
+artifact_path: file:C:/Users/HARDPC/Desktop/AL/projekty/python_agentic_learning/mlruns/1/models/m-85c2422119fb4d26b4641c22614051bc/artifacts
+flavors:
+  python_function:
+    env:
+      conda: conda.yaml
+      virtualenv: python_env.yaml
+    loader_module: mlflow.sklearn
+    model_path: model.skops
+    predict_fn: predict
+    python_version: 3.13.12
+  sklearn:
+    code: null
+    pickled_model: model.skops
+    serialization_format: skops
+    sklearn_version: 1.9.0
+    skops_trusted_types:
+    - sklearn.tree._tree.Tree
+mlflow_version: 3.17.2
+model_id: m-85c2422119fb4d26b4641c22614051bc
+model_size_bytes: 2166749
+model_uuid: m-85c2422119fb4d26b4641c22614051bc
+prompts: null
+run_id: 106b7bdcd4414cff940351cb351dab33
+utc_time_created: '2026-10-23 18:02:10.943989'
