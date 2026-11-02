@@ -1,0 +1,20 @@
+name = "xauusd-volatility-cron"
+main = "src/index.js"
+compatibility_date = "2026-11-01"
+
+# Every hour at :15, Mon-Fri, UTC. Covers 3:00-16:00 ET in both EDT (UTC-4) and EST (UTC-5);
+# the exact ET hour range is enforced in src/index.js.
+[triggers]
+crons = ["15 7-21 * * 1-5"]
+
+[[d1_databases]]
+binding = "DB"
+database_name = "xauusd-predictions"
+database_id = "CHANGE-ME"
+
+[observability]
+enabled = true
+
+# BACKEND_URL is a secret (not committed - the Render URL calls Twelve Data, keep it off the public repo):
+#   npx wrangler secret put BACKEND_URL
+# For local dev put it in worker/.dev.vars as BACKEND_URL=...
