@@ -1,0 +1,156 @@
+/* Achromatic ledger (Taste app sheet, seed 419373497). Face: the one chart hue is gold, on the typical band;
+   stone ground instead of #f8f8f8. Chrome stays ink.
+   Column grid: 1088 = 4 x 263 + 3 x 12 (stats) = 2 x 538 + 12 (model + story). */
+:root {
+  --ground: #f4f3f1;
+  --surface: #ffffff;
+  --raised: #eeeeee;
+  --border: #e6e6e6;
+  --rule: #f0f0f0;
+  --control: #d4d4d4;
+  --text: #0a0a0a;
+  --muted: #636363;
+  --negative: #c4242a;
+  --gold: #8c6a14;          /* the one data hue: typical band */
+  --gold-pale: #e9dfc4;     /* wide band, same hue */
+  --radius-card: 8px;
+  --radius-control: 6px;
+  --gap: 12px;
+  --pad: 24px;
+  --column: 1088px;
+  --fs-title: 24px;
+  --fs-section: 16px;
+  --fs-kpi: 30px;
+  --fs-body: 14px;
+  --fs-small: 13px;
+  --font: "Geist", Inter, system-ui, sans-serif;
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--ground);
+  color: var(--text);
+  font: 400 var(--fs-body)/20px var(--font);
+}
+h1, h2, p, dl, dd, ul { margin: 0; }
+ul { padding: 0; list-style: none; }
+a { color: inherit; }
+.num { font-variant-numeric: tabular-nums; }
+.visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+:focus-visible { outline: 2px solid var(--text); outline-offset: 2px; }
+
+/* Viewer bar */
+.bar { height: 48px; border-bottom: 1px solid var(--border); background: var(--ground); }
+.bar-inner { max-width: var(--column); height: 100%; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; padding: 0 0; }
+.brand { display: flex; align-items: center; gap: 8px; font-weight: 500; text-decoration: none; }
+.mark { color: var(--gold); font-weight: 700; }
+.bar-link { color: var(--muted); text-decoration: none; }
+.bar-link:hover { color: var(--text); }
+
+/* Column */
+.column { max-width: var(--column); margin: 0 auto; }
+main.column { padding: 33px 0 48px; display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--gap); }
+.title-row { display: flex; justify-content: space-between; align-items: flex-start; gap: var(--pad); margin-bottom: 12px; }
+h1 { font-size: var(--fs-title); line-height: 32px; font-weight: 500; letter-spacing: -0.01em; }
+.source { margin-top: 4px; font-size: 13px; line-height: 18px; color: var(--muted); }
+.stamp { font-size: 13px; color: var(--muted); white-space: nowrap; padding-top: 8px; }
+
+/* Cards */
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-card); padding: var(--pad); }
+.card-head { display: flex; justify-content: space-between; align-items: baseline; gap: var(--pad); margin-bottom: 12px; }
+.card-title { font-size: var(--fs-section); line-height: 24px; font-weight: 500; }
+.meta { font-size: 13px; line-height: 18px; color: var(--muted); }
+.note { margin-top: 16px; font-size: 13px; line-height: 20px; color: var(--muted); max-width: 760px; }
+
+/* Current forecast */
+.forecast { display: grid; grid-template-columns: 5fr 7fr; column-gap: 48px; align-items: start; }
+.forecast-figures .window { margin-top: 2px; color: var(--muted); }
+.bands { margin-top: 20px; display: grid; gap: 16px; }
+.bands dt { font-size: var(--fs-small); line-height: 16px; color: var(--muted); }
+.bands dd { margin-top: 2px; }
+.band-typical dd { font-size: var(--fs-kpi); line-height: 36px; font-weight: 700; letter-spacing: -0.01em; }
+.band-wide dd { font-size: 18px; line-height: 24px; font-weight: 500; }
+.forecast-figures .meta { margin-top: 16px; }
+.forecast-strip { padding-top: 4px; }
+.legend { display: flex; gap: 16px; justify-content: flex-end; font-size: var(--fs-small); color: var(--muted); }
+.legend li { display: flex; align-items: center; gap: 6px; }
+.swatch { display: inline-block; width: 12px; height: 8px; }
+.swatch.typical { background: var(--gold); }
+.swatch.wide { background: var(--gold-pale); }
+.swatch.close { width: 2px; height: 12px; background: var(--text); }
+.strip-chart { margin-top: 20px; }
+.strip-chart svg { display: block; width: 100%; height: auto; overflow: visible; }
+.finding { grid-column: 1 / -1; margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--rule); font-size: var(--fs-body); }
+.forecast .note { grid-column: 1 / -1; margin-top: 8px; }
+
+/* Stats: one card split by dividers */
+.stats { display: grid; grid-template-columns: repeat(4, 1fr); background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-card); }
+.stat { padding: 16px var(--pad); }
+.stat + .stat { border-left: 1px solid var(--border); }
+.stat-label { font-size: var(--fs-small); line-height: 16px; color: var(--muted); }
+.stat-value { margin-top: 4px; font-size: var(--fs-title); line-height: 32px; font-weight: 500; }
+.stat-value small { font-size: var(--fs-small); color: var(--muted); font-weight: 400; margin-left: 4px; }
+
+/* Track record table */
+.table-wrap { position: relative; overflow-x: auto; margin: 0 -8px; padding: 0 8px; }
+table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+th { font-size: var(--fs-small); font-weight: 400; color: var(--muted); text-align: left; padding: 0 8px 10px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+td { padding: 0 8px; height: 40px; border-bottom: 1px solid var(--rule); white-space: nowrap; }
+th:first-child, td:first-child { padding-left: 0; }
+th:last-child, td:last-child { padding-right: 0; }
+th.num, td.num { text-align: right; }
+th.flag, td.flag { text-align: center; }
+th.strip-col, td.strip-col { width: 168px; }
+tr.row { cursor: pointer; }
+tr.row:hover td { background: #fafaf9; }
+tr.row:focus-visible { outline: 2px solid var(--text); outline-offset: -2px; }
+tr.row[aria-expanded="true"] td { border-bottom-color: transparent; }
+td .miss { color: var(--negative); }
+td.pending { color: var(--muted); }
+tr.details td { height: auto; padding: 4px 0 20px; white-space: normal; }
+tr.details dl { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px var(--pad); }
+tr.details dt { font-size: var(--fs-small); line-height: 16px; color: var(--muted); }
+tr.details dd { font-variant-numeric: tabular-nums; }
+.row-strip { display: block; width: 168px; height: 16px; }
+.secondary { margin-top: 16px; height: 32px; padding: 0 14px; border: 0; border-radius: var(--radius-control); background: var(--raised); color: var(--text); font: 500 var(--fs-body)/20px var(--font); cursor: pointer; }
+.secondary:hover { background: #e5e5e5; }
+
+/* Model + story */
+.pair { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: var(--gap); align-items: start; }
+.pair .card p { margin-top: 12px; }
+.metrics { display: flex; gap: 48px; margin-top: 12px; }
+.metrics dt { font-size: var(--fs-small); line-height: 16px; color: var(--muted); }
+.metrics dd { margin-top: 2px; font-size: var(--fs-title); line-height: 32px; font-weight: 500; }
+
+/* Footer */
+.footer { display: flex; justify-content: space-between; align-items: center; gap: var(--pad); padding: 20px 0 40px; border-top: 1px solid var(--border); }
+.footer a { display: inline-flex; align-items: center; gap: 8px; text-decoration: none; font-weight: 500; }
+.footer a:hover span { text-decoration: underline; }
+
+/* States */
+body.no-data .forecast-strip, body.no-data .forecast .note, body.no-data #finding { display: none; }
+
+/* Tablet and phone: 16px margins, stacked blocks, the table scrolls in its own frame with the window fixed */
+@media (max-width: 1120px) {
+  .bar-inner, .column { margin: 0 16px; }
+  .bar-inner { max-width: none; }
+}
+@media (max-width: 900px) {
+  .forecast { grid-template-columns: minmax(0, 1fr); }
+  .pair { grid-template-columns: minmax(0, 1fr); }
+  .title-row { flex-direction: column; gap: 4px; }
+  .stamp { padding-top: 0; white-space: normal; }
+}
+@media (max-width: 760px) {
+  .forecast-strip { margin-top: 24px; }
+  .legend { justify-content: flex-start; }
+  .stats { grid-template-columns: repeat(2, 1fr); }
+  .stat:nth-child(3) { border-left: 0; }
+  .stat:nth-child(n + 3) { border-top: 1px solid var(--border); }
+  .card { padding: 20px 16px; }
+  .card-head { flex-direction: column; gap: 2px; }
+  td:first-child, th:first-child { position: sticky; left: 0; background: var(--surface); z-index: 1; }
+  tr.details dl { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .footer { flex-direction: column; align-items: flex-start; }
+}

@@ -12,6 +12,10 @@ binding = "DB"
 database_name = "xauusd-predictions"
 database_id = "efa6affa-934d-40e2-8161-9b04a9fbed3d"
 
+# The public page - static files served before the Worker's fetch handler (/api/* falls through to it)
+[assets]
+directory = "../frontend"
+
 [observability]
 enabled = true
 

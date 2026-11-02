@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>XAU/USD next-hour range forecast</title>
+  <meta name="description" content="Hourly range forecast for gold (XAU/USD) from a random forest volatility model, with its full predicted-vs-actual track record.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <script type="module" src="app.js"></script>
+</head>
+<body>
+  <header class="bar">
+    <div class="bar-inner">
+      <a class="brand" href="/"><span class="mark" aria-hidden="true">Au</span> Range forecast</a>
+      <a class="bar-link" href="https://github.com/ady7ady7/xauusd-volatility-forecast">Source on GitHub</a>
+    </div>
+  </header>
+
+  <main class="column">
+    <div class="title-row">
+      <div>
+        <h1>XAU/USD next-hour range</h1>
+        <p class="source">Random forest volatility model · a new forecast at 15 past each hour, 3:15–15:15 ET, Mon–Fri · prices from Twelve Data</p>
+      </div>
+      <p class="stamp num" id="forecast-status"></p>
+    </div>
+
+    <section class="card forecast" id="forecast" aria-labelledby="forecast-title" aria-live="polite">
+      <div class="forecast-figures">
+        <h2 id="forecast-title" class="card-title">Current forecast</h2>
+        <p class="window num" id="forecast-window"></p>
+        <dl class="bands">
+          <div class="band-typical"><dt>Typical range</dt><dd class="num" id="typical"></dd></div>
+          <div class="band-wide"><dt>Wide range</dt><dd class="num" id="wide"></dd></div>
+        </dl>
+        <p class="meta num" id="forecast-close"></p>
+      </div>
+      <div class="forecast-strip">
+        <ul class="legend" aria-hidden="true">
+          <li><span class="swatch typical"></span>Typical</li>
+          <li><span class="swatch wide"></span>Wide</li>
+          <li><span class="swatch close"></span>Last close</li>
+        </ul>
+        <div id="forecast-chart" class="strip-chart"></div>
+      </div>
+      <p class="finding" id="finding"></p>
+      <p class="note">Bands are empirical widths from historical percentiles of how movement turns into range (75th = typical,
+        90th = wide), centred on the last close. Not a confidence interval and not a direction forecast.</p>
+    </section>
+
+    <section class="stats" id="summary" aria-label="Hit rates">
+      <div class="stat"><p class="stat-label">Range fit, typical</p><p class="stat-value num" id="s-fit-typical">–</p></div>
+      <div class="stat"><p class="stat-label">Range fit, wide</p><p class="stat-value num" id="s-fit-wide">–</p></div>
+      <div class="stat"><p class="stat-label">Price inside, typical</p><p class="stat-value num" id="s-inside-typical">–</p></div>
+      <div class="stat"><p class="stat-label">Price inside, wide</p><p class="stat-value num" id="s-inside-wide">–</p></div>
+    </section>
+
+    <section class="card" id="track-record" aria-labelledby="track-title">
+      <div class="card-head">
+        <h2 id="track-title" class="card-title">Track record</h2>
+        <p class="meta" id="track-meta">Forecast windows, newest first · times ET</p>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th scope="col">Window</th>
+              <th scope="col" class="num">Typical</th>
+              <th scope="col" class="num">Wide</th>
+              <th scope="col" class="num">Actual low – high</th>
+              <th scope="col" class="num">Range</th>
+              <th scope="col" class="flag">Fit T / W</th>
+              <th scope="col" class="flag">Inside T / W</th>
+              <th scope="col" class="strip-col"><span class="visually-hidden">Band against actual</span></th>
+            </tr>
+          </thead>
+          <tbody id="history"></tbody>
+        </table>
+      </div>
+      <button type="button" class="secondary" id="show-all" hidden></button>
+      <p class="note">Range fit: the hour's actual high–low range was no wider than the band. Price inside: the price never left
+        the band. The band is centred on the last close, so a calm move in one direction can miss "inside" while the size of
+        the move was forecast well. Open a row for the model's inputs.</p>
+    </section>
+
+    <div class="pair">
+      <section class="card" id="model" aria-labelledby="model-title">
+        <h2 id="model-title" class="card-title">The model</h2>
+        <dl class="metrics">
+          <div><dt>Test MAE</dt><dd class="num">0.355</dd></div>
+          <div><dt>Test R²</dt><dd class="num">0.484</dd></div>
+        </dl>
+        <p>A random forest regressor predicts how far gold moves from 15 past the hour to its end, as a multiple of how far it
+          moved in the first 15 minutes (the log ratio of realized movement). An MAE of 0.355 on that log scale is a typical
+          error of about ×1.43 on the multiple. Validated with time-series splits: no shuffling, no look-ahead. Trained
+          23 Oct 2026 on the 8:00 ET window, the London/New York overlap; the other hours here are an out-of-sample
+          experiment, and the track record is the data being collected for it.</p>
+      </section>
+
+      <section class="card" id="story" aria-labelledby="story-title">
+        <h2 id="story-title" class="card-title">How it was built</h2>
+        <p>The project started as an attempt to predict direction: whether gold ends the hour higher or lower. That turned out
+          to be a dead end, with no variant giving an edge that held up out of sample. Research into the overlap hour showed
+          that the size of the move is far more predictable than its sign, and the features came out of that work: realized
+          movement, ATR and its trend, directional streaks, jump variation, path efficiency and where in the window the
+          movement concentrated. The model forecasts how far gold moves, never which way. Every forecast is stored with the outcome of its hour, and the code, the model and the pipeline that runs it are on GitHub.</p>
+      </section>
+    </div>
+  </main>
+
+  <footer class="column footer" id="footer">
+    <a href="https://github.com/ady7ady7/xauusd-volatility-forecast">
+      <svg viewBox="0 0 16 16" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+      <span>Author: ady7ady7</span>
+    </a>
+    <p class="meta">Not investment advice.</p>
+  </footer>
+</body>
+</html>

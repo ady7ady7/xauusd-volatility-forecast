@@ -10,3 +10,9 @@ venv/
 .wrangler/
 .dev.vars
 node_modules/
+
+# Private deployment notes
+.env.example
+docs/superpowers/
+.taste-skill/
+.superpowers/
