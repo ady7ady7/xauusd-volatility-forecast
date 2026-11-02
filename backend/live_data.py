@@ -138,7 +138,46 @@ def get_live_observation_features(data: pd.DataFrame) -> Tuple[dict, float]:
     ).reset_index()
 
 
+    if prediction_window.empty:
+        raise ValueError(f'No bars in the observation window for {current_date} {current_hour}:00-{current_hour}:10 ET (market closed?)')
+
     prediction_window_agg['day_of_week'] = current_date.weekday()
     prediction_window_agg = prediction_window_agg.drop(columns = 'trade_date')
     return prediction_window_agg.iloc[0].to_dict(), prediction_window['close'].iloc[-1]
+
+
+def get_previous_window_actuals(data: pd.DataFrame) -> dict:
+    '''
+    What actually happened in the PREVIOUS hour's prediction window (XX:15-XX+1:00 ET, 9 M5 bars).
+    The 100 fetched bars (~8h) already cover it, so no extra API call is needed.
+    Used to pair each stored prediction with its realized outcome.
+
+    Returns actual_* = None if the window is incomplete (e.g. first run of the day, market gap).
+    '''
+    data = data.sort_values('datetime').reset_index(drop=True)
+    data['datetime'] = pd.to_datetime(data['datetime'])
+    for col in ['open', 'high', 'low', 'close']:
+        data[col] = data[col].astype('float')
+    data['abs_ret_1bar'] = data['close'].pct_change().abs() # same realized_power definition as the observation window
+
+    current_window_start = dt.datetime.now(ZoneInfo('America/New_York')).replace(minute=0, second=0, microsecond=0, tzinfo=None)
+    previous_window_start = current_window_start - dt.timedelta(hours=1)
+
+    window = data.loc[
+    (data['datetime'] >= previous_window_start + dt.timedelta(minutes=15)) &
+    (data['datetime'] < current_window_start)
+    ]
+
+    result = {'previous_window_start': previous_window_start.isoformat()}
+    if len(window) != 9:
+        result.update(actual_high=None, actual_low=None, actual_range=None, actual_power=None)
+        return result
+
+    result.update(
+        actual_high=float(window['high'].max()),
+        actual_low=float(window['low'].min()),
+        actual_range=float(window['high'].max() - window['low'].min()),
+        actual_power=float(window['abs_ret_1bar'].sum()),
+    )
+    return result
 
