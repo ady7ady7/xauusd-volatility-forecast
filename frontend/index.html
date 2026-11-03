@@ -7,116 +7,143 @@
   <meta name="description" content="Hourly range forecast for gold (XAU/USD) from a random forest volatility model, with its full predicted-vs-actual track record.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Stack+Sans+Headline:wght@300&family=Stack+Sans+Text:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
+  <script>document.documentElement.classList.add('js');</script>
   <script type="module" src="app.js"></script>
 </head>
 <body>
-  <header class="bar">
-    <div class="bar-inner">
-      <a class="brand" href="/"><span class="mark" aria-hidden="true">Au</span> Range forecast</a>
-      <a class="bar-link" href="https://github.com/ady7ady7/xauusd-volatility-forecast">Source on GitHub</a>
-    </div>
+  <header class="bar frame">
+    <a class="brand" href="/"><svg width="20" height="26" viewBox="0 0 20 26" aria-hidden="true"><rect y="0" width="20" height="3" fill="#111"/><rect y="7.6" width="10" height="3" fill="#111"/><rect y="15.3" width="10" height="3" fill="#111"/><rect y="23" width="20" height="3" fill="#c9a227"/></svg>XAU/USD range</a>
+    <nav aria-label="Sections">
+      <a href="#track-record">Track record</a>
+      <a href="#model">Model</a>
+      <a href="https://github.com/ady7ady7/xauusd-volatility-forecast">GitHub</a>
+    </nav>
   </header>
 
-  <main class="column">
-    <div class="title-row">
-      <div>
-        <h1>XAU/USD next-hour range</h1>
-        <p class="source">Random forest volatility model · a new forecast at 15 past each hour, 3:15–15:15 ET, Mon–Fri · prices from Twelve Data</p>
-      </div>
-      <p class="stamp num" id="forecast-status"></p>
-    </div>
+  <main>
+    <section class="hero frame" id="forecast" aria-labelledby="hero-title">
+      <div class="hero-text">
+        <h1 id="hero-title" data-reveal>XAU/USD, next&nbsp;hour</h1>
+        <p class="lead" data-reveal>Each hour a model reads gold's first 15 minutes and forecasts how wide the next 45 will range.
+          A new reading at 15 past, 3:15–15:15 ET, Monday to Friday.</p>
 
-    <section class="card forecast" id="forecast" aria-labelledby="forecast-title" aria-live="polite">
-      <div class="forecast-figures">
-        <h2 id="forecast-title" class="card-title">Current forecast</h2>
-        <p class="window num" id="forecast-window"></p>
-        <dl class="bands">
-          <div class="band-typical"><dt>Typical range</dt><dd class="num" id="typical"></dd></div>
-          <div class="band-wide"><dt>Wide range</dt><dd class="num" id="wide"></dd></div>
-        </dl>
-        <p class="meta num" id="forecast-close"></p>
+        <div class="readout" aria-live="polite" data-reveal>
+          <p class="readout-window" id="forecast-window">Loading the latest forecast…</p>
+          <div class="readout-bands">
+            <p class="inner"><span class="num" id="inner"></span> <span class="band-name">inner band</span></p>
+            <p class="outer"><span class="num" id="outer"></span> <span class="band-name">outer band</span></p>
+          </div>
+          <p class="note num" id="forecast-close"></p>
+          <p class="note" id="forecast-status"></p>
+        </div>
+
+        <a class="button" href="#track-record" data-reveal>See the track record</a>
       </div>
-      <div class="forecast-strip">
-        <ul class="legend" aria-hidden="true">
-          <li><span class="swatch typical"></span>Typical</li>
-          <li><span class="swatch wide"></span>Wide</li>
-          <li><span class="swatch close"></span>Last close</li>
-        </ul>
-        <div id="forecast-chart" class="strip-chart"></div>
-      </div>
-      <p class="finding" id="finding"></p>
-      <p class="note">Bands are empirical widths from historical percentiles of how movement turns into range (75th = typical,
-        90th = wide), centred on the last close. Not a confidence interval and not a direction forecast.</p>
+
+      <figure class="hero-ruler" data-ui id="hero-ruler" aria-label="Price ruler with the inner and outer bands around the last close"></figure>
     </section>
 
-    <section class="stats" id="summary" aria-label="Hit rates">
-      <div class="stat"><p class="stat-label">Range fit, typical</p><p class="stat-value num" id="s-fit-typical">–</p></div>
-      <div class="stat"><p class="stat-label">Range fit, wide</p><p class="stat-value num" id="s-fit-wide">–</p></div>
-      <div class="stat"><p class="stat-label">Price inside, typical</p><p class="stat-value num" id="s-inside-typical">–</p></div>
-      <div class="stat"><p class="stat-label">Price inside, wide</p><p class="stat-value num" id="s-inside-wide">–</p></div>
+    <section class="scorecard frame" id="summary" aria-labelledby="score-title">
+      <div class="tile tile-head" data-reveal>
+        <h2 id="score-title">How the bands held</h2>
+        <p id="finding">Each forecast is scored against the market an hour after it is made.</p>
+      </div>
+      <div class="tile" data-reveal><p class="tile-value num" id="s-fit-inner">–</p><p>Inner band held the hour's full range</p></div>
+      <div class="tile" data-reveal><p class="tile-value num" id="s-fit-outer">–</p><p>Outer band held the hour's full range</p></div>
+      <div class="tile" data-reveal><p class="tile-value num" id="s-inside-inner">–</p><p>Price never left the inner band</p></div>
+      <div class="tile" data-reveal><p class="tile-value num" id="s-inside-outer">–</p><p>Price never left the outer band</p></div>
+      <figure class="tile tile-photo" data-reveal>
+        <img src="assets/photograph-of-a-vault-with-gold-bars.jpg" width="1920" height="1495" alt="Gold bars stacked to the ceiling of a vault, around 1935" loading="lazy" decoding="async">
+        <figcaption>A gold vault, around 1935</figcaption>
+      </figure>
     </section>
 
-    <section class="card" id="track-record" aria-labelledby="track-title">
-      <div class="card-head">
-        <h2 id="track-title" class="card-title">Track record</h2>
-        <p class="meta" id="track-meta">Forecast windows, newest first · times ET</p>
+    <figure class="ingots" aria-labelledby="ingots-caption">
+      <div class="ingots-frame">
+        <img src="assets/gold-rush-assayers-ingots-1850-issued-by.jpg" width="1920" height="516" alt="Three small gold ingots, each stamped with its fineness in carats, its weight and its value in dollars" loading="lazy" decoding="async">
       </div>
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th scope="col">Window</th>
-              <th scope="col" class="num">Typical</th>
-              <th scope="col" class="num">Wide</th>
-              <th scope="col" class="num">Actual low – high</th>
-              <th scope="col" class="num">Range</th>
-              <th scope="col" class="flag">Fit T / W</th>
-              <th scope="col" class="flag">Inside T / W</th>
-              <th scope="col" class="strip-col"><span class="visually-hidden">Band against actual</span></th>
-            </tr>
-          </thead>
-          <tbody id="history"></tbody>
-        </table>
+      <figcaption class="frame" id="ingots-caption"><span>Assayers' ingots, California 1850: each one stamped with its fineness, its weight and its value.</span> <span>National Museum of American History</span></figcaption>
+    </figure>
+
+    <section class="record frame" id="track-record" aria-labelledby="track-title">
+      <div class="record-panel" aria-live="polite">
+        <div class="panel" data-ui id="panel">
+          <p class="panel-window" id="panel-window"></p>
+          <div class="panel-body">
+            <div class="panel-ruler" id="panel-ruler"></div>
+            <dl class="panel-figures" id="panel-figures"></dl>
+          </div>
+        </div>
       </div>
-      <button type="button" class="secondary" id="show-all" hidden></button>
-      <p class="note">Range fit: the hour's actual high–low range was no wider than the band. Price inside: the price never left
-        the band. The band is centred on the last close, so a calm move in one direction can miss "inside" while the size of
-        the move was forecast well. Open a row for the model's inputs.</p>
+
+      <div class="record-list">
+        <h2 id="track-title" data-reveal>Track record</h2>
+        <p class="record-intro" data-reveal>Every forecast, newest first, with what gold really did in its hour. Point at an hour to see it on the ruler; open it for the model's inputs.</p>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th scope="col">Window (ET time)</th>
+                <th scope="col" class="num">Actual range</th>
+                <th scope="col">Range fit</th>
+                <th scope="col">Price inside</th>
+              </tr>
+            </thead>
+            <tbody id="history"></tbody>
+          </table>
+        </div>
+        <button type="button" class="button button-quiet" id="show-all" hidden></button>
+        <ol class="rules">
+          <li><strong>Range fit</strong> asks whether the hour's actual high–low range was no wider than the band: "inner" if it fit the inner band, "outer" if only the outer one.</li>
+          <li><strong>Price inside</strong> asks whether the price stayed inside the band for the whole hour.</li>
+          <li>Both bands are centred on the last close and sized from historical percentiles (75th inner, 90th outer). They are not a confidence interval and not a direction call, so a calm move in one direction can miss "inside" while its size was forecast well.</li>
+        </ol>
+      </div>
     </section>
 
-    <div class="pair">
-      <section class="card" id="model" aria-labelledby="model-title">
-        <h2 id="model-title" class="card-title">The model</h2>
-        <dl class="metrics">
-          <div><dt>Test MAE</dt><dd class="num">0.355</dd></div>
-          <div><dt>Test R²</dt><dd class="num">0.484</dd></div>
-        </dl>
-        <p>A random forest regressor predicts how far gold moves from 15 past the hour to its end, as a multiple of how far it
-          moved in the first 15 minutes (the log ratio of realized movement). An MAE of 0.355 on that log scale is a typical
-          error of about ×1.43 on the multiple. Validated with time-series splits: no shuffling, no look-ahead. Trained
-          23 Oct 2026 on the 8:00 ET window, the London/New York overlap; the other hours here are an out-of-sample
-          experiment, and the track record is the data being collected for it.</p>
-      </section>
-
-      <section class="card" id="story" aria-labelledby="story-title">
-        <h2 id="story-title" class="card-title">How it was built</h2>
-        <p>The project started as an attempt to predict direction: whether gold ends the hour higher or lower. That turned out
-          to be a dead end, with no variant giving an edge that held up out of sample. Research into the overlap hour showed
-          that the size of the move is far more predictable than its sign, and the features came out of that work: realized
-          movement, ATR and its trend, directional streaks, jump variation, path efficiency and where in the window the
-          movement concentrated. The model forecasts how far gold moves, never which way. Every forecast is stored with the outcome of its hour, and the code, the model and the pipeline that runs it are on GitHub.</p>
-      </section>
-    </div>
+    <section class="about" id="model" aria-labelledby="model-title">
+      <div class="about-panel">
+        <h2 id="model-title" data-reveal>Volatility, not direction.</h2>
+        <div class="about-text">
+          <div data-reveal>
+            <h3>The model</h3>
+            <p>A random forest predicts how far gold moves from 15 past the hour to its end, as a multiple of its first 15 minutes.
+              Test MAE 0.355 on the log scale (about ×1.43 on the multiple), R² 0.484, time-series splits with no look-ahead.
+              Trained 23 Oct 2026 on the 8:00 ET hour; every other hour here is an out-of-sample test.</p>
+          </div>
+          <div data-reveal>
+            <h3>How it was built</h3>
+            <p>It began as an attempt to call gold's direction, and no version held an edge out of sample. Research showed that
+              the size of a move is far more predictable than its sign, so the model forecasts how far gold moves, never which way.</p>
+          </div>
+          <a class="button" href="https://github.com/ady7ady7/xauusd-volatility-forecast" data-reveal>Source on GitHub</a>
+        </div>
+        <figure class="about-photo">
+          <img src="assets/1917-04-21-iberica-01.jpg" width="1920" height="1940" alt="Assay office clerks weighing gold bars on a large balance, New York, 1917" loading="lazy" decoding="async">
+        </figure>
+      </div>
+    </section>
   </main>
 
-  <footer class="column footer" id="footer">
-    <a href="https://github.com/ady7ady7/xauusd-volatility-forecast">
-      <svg viewBox="0 0 16 16" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
-      <span>Author: ady7ady7</span>
-    </a>
-    <p class="meta">Not investment advice.</p>
+  <footer class="footer">
+    <div class="footer-ruler frame" id="footer-ruler" aria-hidden="true"></div>
+    <div class="footer-grid frame">
+      <div class="footer-links">
+        <a class="author" href="https://github.com/ady7ady7">
+          <svg viewBox="0 0 16 16" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+          Author: ady7ady7
+        </a>
+        <a href="https://github.com/ady7ady7/xauusd-volatility-forecast">Source on GitHub</a>
+        <a href="https://twelvedata.com">Prices from Twelve Data</a>
+      </div>
+      <p class="credits">Pictures: <a href="https://commons.wikimedia.org/wiki/File:1917-04-21_IB%C3%89RICA_01.jpg">“Weighing of ingots at the gold assay office, New York”</a> (Ibérica, 1917), public domain; <a href="https://commons.wikimedia.org/wiki/File:Gold_rush_assayers%27_ingots,_1850,_issued_by_the_State_Assay_Office_of_California_-_National_Museum_of_American_History_-_DSC06178.JPG">“Gold rush assayers' ingots, 1850”</a> by Daderot, CC0; <a href="https://commons.wikimedia.org/wiki/File:Photograph_of_a_vault_with_gold_bars_-_NARA_-_296609.jpg">“Photograph of a vault with gold bars”</a> (NARA), public domain. All via Wikimedia Commons.</p>
+    </div>
+    <div class="footer-last frame">
+      <p>Not investment advice.</p>
+      <a class="button button-small" href="#forecast">Back to the forecast</a>
+    </div>
   </footer>
 </body>
 </html>

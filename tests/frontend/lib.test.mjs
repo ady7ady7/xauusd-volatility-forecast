@@ -19,9 +19,9 @@ test('etNowIso handles EDT (UTC-4) before the DST change', () => {
   assert.equal(etNowIso(new Date('2026-10-30T12:15:00Z')), '2026-10-30T08:15:00');
 });
 
-test('windowLabel gives the ET day and the prediction span', () => {
-  assert.deepEqual(windowLabel('2026-11-02T08:00:00'), { day: 'Mon 2 Nov', span: '8:15–9:00 ET' });
-  assert.deepEqual(windowLabel('2026-11-02T12:00:00'), { day: 'Mon 2 Nov', span: '12:15–13:00 ET' });
+test('windowLabel gives the ET date and the prediction span, without weekday or zone', () => {
+  assert.deepEqual(windowLabel('2026-11-02T08:00:00'), { day: '2 Nov', span: '8:15–9:00' });
+  assert.deepEqual(windowLabel('2026-11-02T15:00:00'), { day: '2 Nov', span: '15:15–16:00' });
 });
 
 test('isLive only during the prediction window of that forecast', () => {
@@ -96,18 +96,58 @@ test('statusLine: live forecast shows when it was made and the next update', () 
 });
 
 test('statusLine: between trading-hour runs it announces the next forecast, not a closed market', () => {
-  assert.equal(statusLine('2026-11-02T08:00:00', '2026-11-02T09:05:00'), 'Next forecast at 9:15 ET · last forecast from Mon 2 Nov, 8:15 ET');
-  assert.equal(statusLine('2026-11-02T15:00:00', '2026-11-03T03:05:00'), 'Next forecast at 3:15 ET · last forecast from Mon 2 Nov, 15:15 ET');
+  assert.equal(statusLine('2026-11-02T08:00:00', '2026-11-02T09:05:00'), 'Next forecast at 9:15 ET · last forecast from 2 Nov, 8:15 ET');
+  assert.equal(statusLine('2026-11-02T15:00:00', '2026-11-03T03:05:00'), 'Next forecast at 3:15 ET · last forecast from 2 Nov, 15:15 ET');
 });
 
 test('statusLine: after the last window, overnight and at weekends it says outside the window', () => {
-  const out = 'Outside the forecast window — last forecast from Mon 2 Nov, 15:15 ET';
+  const out = 'Outside the forecast window — last forecast from 2 Nov, 15:15 ET';
   assert.equal(statusLine('2026-11-02T15:00:00', '2026-11-02T16:30:00'), out);
   assert.equal(statusLine('2026-11-02T15:00:00', '2026-11-03T02:30:00'), out);
-  assert.equal(statusLine('2026-11-06T15:00:00', '2026-11-07T10:05:00'), 'Outside the forecast window — last forecast from Fri 6 Nov, 15:15 ET');
+  assert.equal(statusLine('2026-11-06T15:00:00', '2026-11-07T10:05:00'), 'Outside the forecast window — last forecast from 6 Nov, 15:15 ET');
 });
 
 test('historyButtonLabel says "all" only while the API returned every row', () => {
   assert.equal(historyButtonLabel(40, 500), 'Show all 40 windows');
   assert.equal(historyButtonLabel(500, 500), 'Show the latest 500 windows');
+});
+
+import { hitLevels, rulerTicks, rulerView } from '../../frontend/lib.js';
+
+test('hitLevels names the tightest band that held: inner, outer or neither', () => {
+  assert.deepEqual(hitLevels(allInside), { fit: 'inner', inside: 'inner' });
+  assert.deepEqual(hitLevels(movedUp), { fit: 'inner', inside: 'neither' });
+  assert.deepEqual(hitLevels(tooWide), { fit: 'outer', inside: 'neither' });
+  const outerOnly = { ...band, actual_high: 111, actual_low: 99, actual_range: 12 };
+  assert.deepEqual(hitLevels(outerOnly), { fit: 'outer', inside: 'outer' });
+  const tooWideForBoth = { ...band, actual_high: 115, actual_low: 99, actual_range: 16 };
+  assert.deepEqual(hitLevels(tooWideForBoth), { fit: 'neither', inside: 'neither' });
+});
+
+test('hitLevels is null while the outcome is unknown', () => {
+  assert.deepEqual(hitLevels(pending), { fit: null, inside: null });
+});
+
+test('rulerTicks gives one tick per dollar with a major tick every 5', () => {
+  const ticks = rulerTicks(98.4, 106.2);
+  assert.deepEqual(ticks.map((t) => t.price), [99, 100, 101, 102, 103, 104, 105, 106]);
+  assert.deepEqual(ticks.filter((t) => t.major).map((t) => t.price), [100, 105]);
+});
+
+test('rulerTicks coarsens the step so a wide span stays readable', () => {
+  const ticks = rulerTicks(3900, 4100);
+  assert.ok(ticks.length <= 60);
+  assert.ok(ticks.every((t) => t.price % 5 === 0));
+  assert.ok(ticks.filter((t) => t.major).every((t) => t.price % 25 === 0));
+});
+
+test('rulerView centres on the bands and leaves room past the outer band', () => {
+  const v = rulerView(allInside, 2);
+  assert.equal((v.lo + v.hi) / 2, 105);
+  assert.equal(v.hi - v.lo, 28);           // outer width 14, zoom 2
+});
+
+test('rulerView widens to keep an actual range that broke out in view', () => {
+  const v = rulerView({ ...band, actual_high: 130, actual_low: 101, actual_range: 29 }, 1.2);
+  assert.ok(v.hi > 130 && v.lo < 101);
 });

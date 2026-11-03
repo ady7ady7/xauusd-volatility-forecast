@@ -4,7 +4,6 @@
 // or Tokyo sees the same ET labels.
 
 const LAST_HOUR = 15; // ET, last observation window of the day - mirrors worker/src/index.js
-const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
 const parseNaive = (iso) => new Date(iso + 'Z');
@@ -25,8 +24,8 @@ export function windowLabel(windowStart) {
   const d = parseNaive(windowStart);
   const h = d.getUTCHours();
   return {
-    day: `${DAYS[d.getUTCDay()]} ${d.getUTCDate()} ${MONTHS[d.getUTCMonth()]}`,
-    span: `${h}:15–${h + 1}:00 ET`,
+    day: `${d.getUTCDate()} ${MONTHS[d.getUTCMonth()]}`,
+    span: `${h}:15–${h + 1}:00`,
   };
 }
 
@@ -77,6 +76,39 @@ export function hitFlags(row) {
     insideTypical: row.actual_high <= row.typical_high && row.actual_low >= row.typical_low,
     insideWide: row.actual_high <= row.wide_high && row.actual_low >= row.wide_low,
   };
+}
+
+// The tightest band that held, for range fit (width) and price inside (position). The inner band sits inside
+// the outer one, so holding the inner band implies holding the outer band too.
+export function hitLevels(row) {
+  const f = hitFlags(row);
+  if (f.fitTypical === null) return { fit: null, inside: null };
+  const level = (inner, outer) => (inner ? 'inner' : outer ? 'outer' : 'neither');
+  return { fit: level(f.fitTypical, f.fitWide), inside: level(f.insideTypical, f.insideWide) };
+}
+
+// The price span a ruler shows: centred on the bands, zoom × the outer band's width, widened to keep an
+// actual range that broke out in view (with 8% air beyond it)
+export function rulerView(row, zoom) {
+  const mid = (row.wide_low + row.wide_high) / 2;
+  let half = ((row.wide_high - row.wide_low) * zoom) / 2;
+  if (row.actual_range !== null && row.actual_range !== undefined) {
+    const reach = Math.max(row.actual_high - mid, mid - row.actual_low);
+    half = Math.max(half, reach * 1.08);
+  }
+  return { lo: mid - half, hi: mid + half };
+}
+
+// Graduations for a ruler over [lo, hi]: the smallest step from the list that keeps 60 ticks or fewer,
+// with a major tick every 5 steps
+export function rulerTicks(lo, hi) {
+  for (const step of [1, 2, 5, 10, 20, 50, 100]) {
+    if ((hi - lo) / step > 60) continue;
+    const ticks = [];
+    for (let p = Math.ceil(lo / step) * step; p <= hi; p += step) ticks.push({ price: p, major: p % (step * 5) === 0 });
+    return ticks;
+  }
+  return [];
 }
 
 // x positions (0..width) for the band strip: wide band, typical band, last close, actual low-high.
