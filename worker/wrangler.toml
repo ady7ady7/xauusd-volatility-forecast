@@ -5,7 +5,8 @@ compatibility_date = "2026-11-01"
 # Every hour at :15, Mon-Fri, UTC. Covers 3:00-16:00 ET in both EDT (UTC-4) and EST (UTC-5);
 # the exact ET hour range is enforced in src/index.js.
 [triggers]
-crons = ["15 7-21 * * 1-5"]
+# Cloudflare numbers days 1 = Sunday, so the days are spelled out
+crons = ["15 7-21 * * MON-FRI"]
 
 [[d1_databases]]
 binding = "DB"
