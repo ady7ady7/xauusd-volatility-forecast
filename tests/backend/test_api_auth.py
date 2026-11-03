@@ -52,9 +52,16 @@ class ApiAuthTest(unittest.TestCase):
         self.assertEqual(res.status_code, 200)
         self.assertEqual(res.json(), {'status': 'ok'})
 
-    def test_refuses_everything_when_no_key_is_configured(self):
+    def test_says_so_when_no_key_is_configured_on_the_server(self):
         with mock.patch.dict(os.environ, {'API_KEY': ''}):
-            self.assertEqual(self.client.post('/predict', json=FEATURES, headers={'X-API-Key': ''}).status_code, 401)
+            res = self.client.post('/predict', json=FEATURES, headers={'X-API-Key': ''})
+        self.assertEqual(res.status_code, 503)
+        self.assertEqual(res.json(), {'detail': 'API_KEY is not set on the server'})
+
+    def test_whitespace_around_either_key_is_ignored(self):
+        with mock.patch.dict(os.environ, {'API_KEY': ' test-key\n'}):
+            res = self.client.post('/predict', json=FEATURES, headers={'X-API-Key': 'test-key '})
+        self.assertEqual(res.status_code, 200)
 
 
 if __name__ == '__main__':

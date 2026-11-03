@@ -19,8 +19,10 @@ async def lifespan(app: FastAPI):
     
 def require_api_key(x_api_key: str = Header(default='')):
     #only the Cloudflare Worker knows API_KEY (Render env var); with no key configured nobody gets in
-    expected = os.environ.get('API_KEY', '')
-    if not expected or not secrets.compare_digest(x_api_key, expected):
+    expected = os.environ.get('API_KEY', '').strip() #strip: a space or newline pasted into a dashboard must not lock the Worker out
+    if not expected:
+        raise HTTPException(status_code=503, detail='API_KEY is not set on the server')
+    if not secrets.compare_digest(x_api_key.strip(), expected):
         raise HTTPException(status_code=401, detail='missing or wrong API key')
 
 #private API: no public docs, the prediction routes need the key
