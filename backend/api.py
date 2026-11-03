@@ -18,10 +18,10 @@ async def lifespan(app: FastAPI):
     model_store.clear()  #$##runs once, at shutdown
     
 def require_api_key(x_api_key: str = Header(default='')):
-    #only the Cloudflare Worker knows API_KEY (Render env var); with no key configured nobody gets in
-    expected = os.environ.get('API_KEY', '').strip() #strip: a space or newline pasted into a dashboard must not lock the Worker out
+    #only the Cloudflare Worker knows BACKEND_KEY (Render env var, same name and value as the Worker secret); with no key configured nobody gets in
+    expected = os.environ.get('BACKEND_KEY', '').strip() #strip: a space or newline pasted into a dashboard must not lock the Worker out
     if not expected:
-        raise HTTPException(status_code=503, detail='API_KEY is not set on the server')
+        raise HTTPException(status_code=503, detail='BACKEND_KEY is not set on the server')
     if not secrets.compare_digest(x_api_key.strip(), expected):
         raise HTTPException(status_code=401, detail='missing or wrong API key')
 
