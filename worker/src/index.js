@@ -18,7 +18,7 @@ const INSTRUMENTS = [
 
 async function runInstrument(env, { symbol, path }, hour) {
   // Render free tier may be asleep - the first request waits ~1 min for it to boot
-  const res = await fetch(`${env.BACKEND_URL}${path}`);
+  const res = await fetch(`${env.BACKEND_URL}${path}`, { headers: { 'X-API-Key': env.BACKEND_KEY } });
   if (!res.ok) {
     console.error(`${symbol}: backend error ${res.status}: ${await res.text()}`);
     return;

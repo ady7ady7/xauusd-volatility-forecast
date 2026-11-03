@@ -16,3 +16,7 @@ node_modules/
 docs/superpowers/
 .taste-skill/
 .superpowers/
+
+# Local exports of the research data (features are private)
+predictions*.json
+predictions*.sql

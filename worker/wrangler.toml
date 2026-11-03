@@ -21,4 +21,6 @@ enabled = true
 
 # BACKEND_URL is a secret (not committed - the Render URL calls Twelve Data, keep it off the public repo):
 #   npx wrangler secret put BACKEND_URL
-# For local dev put it in worker/.dev.vars as BACKEND_URL=...
+# BACKEND_KEY is a secret too: the shared key the backend checks (Render env var API_KEY holds the same value):
+#   npx wrangler secret put BACKEND_KEY
+# For local dev put both in worker/.dev.vars as BACKEND_URL=... and BACKEND_KEY=...

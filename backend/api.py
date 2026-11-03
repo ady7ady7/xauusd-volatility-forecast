@@ -1,7 +1,9 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import Depends, FastAPI, Header, HTTPException
 from pydantic import BaseModel
 from contextlib import asynccontextmanager
 import datetime as dt
+import os
+import secrets
 from zoneinfo import ZoneInfo
 import predict_volatility_multiplier as pvm
 import live_data as live_data
@@ -15,7 +17,14 @@ async def lifespan(app: FastAPI):
     yield
     model_store.clear()  #$##runs once, at shutdown
     
-app = FastAPI(lifespan = lifespan)
+def require_api_key(x_api_key: str = Header(default='')):
+    #only the Cloudflare Worker knows API_KEY (Render env var); with no key configured nobody gets in
+    expected = os.environ.get('API_KEY', '')
+    if not expected or not secrets.compare_digest(x_api_key, expected):
+        raise HTTPException(status_code=401, detail='missing or wrong API key')
+
+#private API: no public docs, the prediction routes need the key
+app = FastAPI(lifespan = lifespan, docs_url=None, redoc_url=None, openapi_url=None)
 
 #observation features as class attributes
 class ObservationFeatures(BaseModel):
@@ -30,13 +39,18 @@ class ObservationFeatures(BaseModel):
     day_of_week: int
     
 
-@app.post('/predict') #/predict route for FastAPI
+@app.get('/health') #open, for Render's health check
+def health() -> dict:
+    return {'status': 'ok'}
+
+
+@app.post('/predict', dependencies=[Depends(require_api_key)]) #/predict route for FastAPI
 def predict(features: ObservationFeatures) -> dict:
     predicted_multiplier = pvm.predict_volatility(model_store['model'], features.model_dump())
     return {'predicted_volatility_multiplier': predicted_multiplier}
 
 
-@app.get('/predict/live')
+@app.get('/predict/live', dependencies=[Depends(require_api_key)])
 def predict_live() -> dict:
     try:
         data = live_data.get_recent_bars(symbol='XAU/USD', interval='5min')
