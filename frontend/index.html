@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>XAU/USD next-hour range forecast</title>
+  <title>Range Prediction · XAU/USD next hour</title>
   <meta name="description" content="Hourly range forecast for gold (XAU/USD) from a random forest volatility model, with its full predicted-vs-actual track record.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -14,7 +14,7 @@
 </head>
 <body>
   <header class="bar frame">
-    <a class="brand" href="/"><svg width="20" height="26" viewBox="0 0 20 26" aria-hidden="true"><rect y="0" width="20" height="3" fill="#111"/><rect y="7.6" width="10" height="3" fill="#111"/><rect y="15.3" width="10" height="3" fill="#111"/><rect y="23" width="20" height="3" fill="#c9a227"/></svg>XAU/USD range</a>
+    <a class="brand" href="/"><svg width="20" height="26" viewBox="0 0 20 26" aria-hidden="true"><rect y="0" width="20" height="3" fill="#111"/><rect y="7.6" width="10" height="3" fill="#111"/><rect y="15.3" width="10" height="3" fill="#111"/><rect y="23" width="20" height="3" fill="#c9a227"/></svg>Range Prediction</a>
     <nav aria-label="Sections">
       <a href="#track-record">Track record</a>
       <a href="#model">Model</a>
@@ -80,7 +80,7 @@
 
       <div class="record-list">
         <h2 id="track-title" data-reveal>Track record</h2>
-        <p class="record-intro" data-reveal>Every forecast, newest first, with what gold really did in its hour. Point at an hour to see it on the ruler; open it for the model's inputs.</p>
+        <p class="record-intro" data-reveal>Every forecast, newest first, with what gold really did in its hour. Point at an hour to see it on the ruler; open it for the model's prediction.</p>
         <div class="table-wrap">
           <table>
             <thead>
@@ -103,26 +103,20 @@
       </div>
     </section>
 
-    <section class="about" id="model" aria-labelledby="model-title">
+    <section class="about frame" id="model" aria-label="The model and how it was built">
       <div class="about-panel">
-        <h2 id="model-title" data-reveal>Volatility, not direction.</h2>
-        <div class="about-text">
-          <div data-reveal>
-            <h3>The model</h3>
-            <p>A random forest predicts how far gold moves from 15 past the hour to its end, as a multiple of its first 15 minutes.
-              Test MAE 0.355 on the log scale (about ×1.43 on the multiple), R² 0.484, time-series splits with no look-ahead.
-              Trained 23 Oct 2026 on the 8:00 ET hour; every other hour here is an out-of-sample test.</p>
-          </div>
-          <div data-reveal>
-            <h3>How it was built</h3>
-            <p>It began as an attempt to call gold's direction, and no version held an edge out of sample. Research showed that
-              the size of a move is far more predictable than its sign, so the model forecasts how far gold moves, never which way.</p>
-          </div>
-          <a class="button" href="https://github.com/ady7ady7/xauusd-volatility-forecast" data-reveal>Source on GitHub</a>
+        <div class="about-block" data-reveal>
+          <h2>The model</h2>
+          <p>A random forest predicts how far gold moves from 15 past the hour to its end, as a multiple of its first 15 minutes.
+            Test MAE 0.355 on the log scale (about ×1.43 on the multiple), R² 0.484, time-series splits with no look-ahead.
+            Trained 23 Oct 2026 on the 8:00 ET hour; every other hour here is an out-of-sample test.</p>
         </div>
-        <figure class="about-photo">
-          <img src="assets/1917-04-21-iberica-01.jpg" width="1920" height="1940" alt="Assay office clerks weighing gold bars on a large balance, New York, 1917" loading="lazy" decoding="async">
-        </figure>
+        <div class="about-block" data-reveal>
+          <h2>How it was built</h2>
+          <p>It began as an attempt to call gold's direction, and no version held an edge out of sample. Research showed that
+            the size of a move is far more predictable than its sign, so the model forecasts how far gold moves, never which way.</p>
+          <a class="button" href="https://github.com/ady7ady7/xauusd-volatility-forecast">Source on GitHub</a>
+        </div>
       </div>
     </section>
   </main>
@@ -138,7 +132,7 @@
         <a href="https://github.com/ady7ady7/xauusd-volatility-forecast">Source on GitHub</a>
         <a href="https://twelvedata.com">Prices from Twelve Data</a>
       </div>
-      <p class="credits">Pictures: <a href="https://commons.wikimedia.org/wiki/File:1917-04-21_IB%C3%89RICA_01.jpg">“Weighing of ingots at the gold assay office, New York”</a> (Ibérica, 1917), public domain; <a href="https://commons.wikimedia.org/wiki/File:Gold_rush_assayers%27_ingots,_1850,_issued_by_the_State_Assay_Office_of_California_-_National_Museum_of_American_History_-_DSC06178.JPG">“Gold rush assayers' ingots, 1850”</a> by Daderot, CC0; <a href="https://commons.wikimedia.org/wiki/File:Photograph_of_a_vault_with_gold_bars_-_NARA_-_296609.jpg">“Photograph of a vault with gold bars”</a> (NARA), public domain. All via Wikimedia Commons.</p>
+      <p class="credits">Pictures: <a href="https://commons.wikimedia.org/wiki/File:Gold_rush_assayers%27_ingots,_1850,_issued_by_the_State_Assay_Office_of_California_-_National_Museum_of_American_History_-_DSC06178.JPG">“Gold rush assayers' ingots, 1850”</a> by Daderot, CC0; <a href="https://commons.wikimedia.org/wiki/File:Photograph_of_a_vault_with_gold_bars_-_NARA_-_296609.jpg">“Photograph of a vault with gold bars”</a> (NARA), public domain. All via Wikimedia Commons.</p>
     </div>
     <div class="footer-last frame">
       <p>Not investment advice.</p>

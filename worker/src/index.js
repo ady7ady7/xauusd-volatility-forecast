@@ -76,8 +76,11 @@ export default {
     if (url.pathname === '/api/predictions') {
       const requested = parseInt(url.searchParams.get('limit'), 10);
       const limit = Number.isNaN(requested) ? 200 : Math.min(Math.max(requested, 1), 500);
+      // Every column except `features`: the model's inputs stay in D1 for private research, not on the public API
       const { results } = await env.DB.prepare(
-        'SELECT * FROM predictions WHERE symbol = ? ORDER BY window_start DESC LIMIT ?'
+        `SELECT symbol, window_start, created_at, last_close, predicted_multiplier, predicted_power,
+                typical_low, typical_high, wide_low, wide_high, actual_high, actual_low, actual_range, actual_power
+         FROM predictions WHERE symbol = ? ORDER BY window_start DESC LIMIT ?`
       ).bind(symbol, limit).all();
       return Response.json(results, { headers });
     }

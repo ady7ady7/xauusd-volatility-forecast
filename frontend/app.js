@@ -8,17 +8,6 @@ const ROWS_SHOWN = 24;
 const API_LIMIT = 500;       // rows fetched for the track record (the API's maximum)
 const REFRESH_MS = 60_000;   // re-check data and the status line while the tab stays open
 
-const FEATURE_LABELS = {
-  realized_power_observation: 'Realized movement, first 15 min',
-  atr14_mean_observation: 'ATR(14), mean',
-  otf_streak_observation: 'Directional streak',
-  sjv_10_observation: 'Signed jump variation (10)',
-  efficiency_ratio_10_observation: 'Efficiency ratio (10)',
-  wtc_10_observation: 'Range-to-movement ratio (10)',
-  center_of_mass_mean_observation: 'Movement centre of mass',
-  atr_trend_observation: 'ATR rising, last 5 bars',
-  day_of_week: 'Day of week (0 = Mon)',
-};
 const LEVEL_TEXT = { inner: 'inner', outer: 'outer', neither: 'neither' };
 
 const SVG = 'http://www.w3.org/2000/svg';
@@ -151,7 +140,6 @@ function showInPanel(row) {
 }
 
 function detailsRow(row) {
-  const features = JSON.parse(row.features);
   const tr = document.createElement('tr');
   tr.className = 'details';
   tr.hidden = true;
@@ -163,7 +151,6 @@ function detailsRow(row) {
     ['Predicted multiplier', num(row.predicted_multiplier, 2)],
     ['Predicted movement', num(row.predicted_power, 5)],
     ['Actual movement', num(row.actual_power, 5)],
-    ...Object.entries(FEATURE_LABELS).filter(([key]) => key in features).map(([key, label]) => [label, num(features[key], 4)]),
   ]));
   td.append(dl);
   tr.append(td);

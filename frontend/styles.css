@@ -174,25 +174,16 @@ tr.details dd { font-size: var(--step-small); }
 .rules { margin-top: 40px; padding-left: 1.4em; display: grid; gap: 12px; max-width: 40em; }
 .rules strong { font-weight: 500; }
 
-/* about: a dark inset panel with the assay photograph cut by the ruler's edge */
-.about { margin-top: var(--section); padding-inline: 20px; }
+/* the model: two blocks side by side on one dark field */
+.about { margin-top: var(--section); }
 .about-panel {
-  background: var(--field); color: var(--field-ink); min-height: 100svh; position: relative; overflow: hidden;
-  display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: var(--gap); padding: 56px;
+  background: var(--field); color: var(--field-ink);
+  display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 48px 64px; padding: 56px;
 }
-.about h2 { grid-column: 1 / 7; font-size: clamp(2.5rem, 1rem + 4.4vw, 4rem); max-width: 7em; }
-.about-text { grid-column: 8 / 12; display: grid; gap: 48px; align-content: start; }
-.about-text h3 { margin-bottom: 12px; font-size: var(--step-lead); font-weight: 400; }
-.about-text p { color: var(--field-ink); }
-.about-text .button { justify-self: start; }
-.about-text .button:hover { background: var(--field-ink); color: var(--ink); }
-.about-photo {
-  position: absolute; left: 56px; bottom: -8%; width: 38vw; max-width: 600px;
-  -webkit-mask: var(--comb-tile) 0 0 / 60px 28px repeat-x, var(--solid) 0 28px / 100% 100% no-repeat;
-  mask: var(--comb-tile) 0 0 / 60px 28px repeat-x, var(--solid) 0 28px / 100% 100% no-repeat;
-}
-.about-photo { overflow: hidden; }
-.about-photo img { width: 100%; aspect-ratio: 1; object-fit: cover; filter: grayscale(1) contrast(1.05); transform: scale(1.16) translateY(-2%); }
+.about h2 { font-size: var(--step-head); margin-bottom: 24px; }
+.about-block p { max-width: 34em; }
+.about .button { margin-top: 32px; }
+.about .button:hover { background: var(--field-ink); color: var(--ink); }
 
 /* footer: the ruler built large */
 .footer { background: var(--field); color: var(--field-ink); margin-top: 20px; padding-block: 72px 32px; }
@@ -231,11 +222,9 @@ tr.details dd { font-size: var(--step-small); }
   .hero-ruler { width: 40%; }
   .record-panel { grid-column: 1 / 13; position: static; }
   .panel { aspect-ratio: auto; min-height: 420px; }
+  .panel-figures { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px 32px; }
   .record-list { grid-column: 1 / 13; margin-top: 56px; }
-  .about-text { grid-column: 1 / 13; margin-top: 48px; max-width: 36em; }
-  .about h2 { grid-column: 1 / 13; }
-  .about-panel { padding-bottom: 72vw; }
-  .about-photo { width: 70vw; max-width: none; }
+  .about-panel { grid-template-columns: minmax(0, 1fr); padding: 40px; }
 }
 
 /* phone: its own composition, the ruler lies flat at the foot of the first screen */
@@ -253,16 +242,14 @@ tr.details dd { font-size: var(--step-small); }
   .tile-head { grid-column: span 2; min-height: 0; }
   .tile-photo { grid-column: span 2; min-height: 240px; }
   .panel { padding: 20px; min-height: 380px; }
+  .panel-figures { grid-template-columns: minmax(0, 1fr); gap: 14px; }
   .panel-body { grid-template-columns: 96px minmax(0, 1fr); gap: 20px; }
   th:nth-child(2), td.range-cell { display: none; }
   table { font-size: 1rem; }
   td { height: 56px; }
   tr.row td:first-child, th { white-space: nowrap; }
   tr.details td { padding-left: 0; }
-  .about { padding-inline: 10px; }
-  .about-panel { padding: 32px 22px 92vw; }
-  .about h2 { font-size: 9vw; }
-  .about-photo { left: 7vw; width: 86vw; bottom: -6%; }
+  .about-panel { padding: 32px 22px; }
   .footer-ruler { height: 22svh; min-height: 140px; gap: 3px; }
   .footer-links, .credits { grid-column: 1 / 13; }
   .credits { margin-top: 32px; }
