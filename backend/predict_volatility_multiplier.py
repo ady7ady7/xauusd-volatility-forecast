@@ -21,7 +21,7 @@ def predict_volatility(model, observation_features: dict) -> float:
 
 
 
-def calibrate_range_bounds(predicted_power: float, last_close: float) -> dict:
+def calibrate_range_bounds(predicted_power: float, last_close: float) -> tuple[float, float, float, float]:
     """
     predicted_power: power_obs * model's predicted multiplier (already computed)
     last_close: close of the most recent CLOSED bar in the observation window
