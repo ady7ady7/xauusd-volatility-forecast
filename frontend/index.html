@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Range Prediction · XAU/USD next hour</title>
-  <meta name="description" content="Hourly range forecast for gold (XAU/USD) from a random forest volatility model, with its full predicted-vs-actual track record.">
+  <meta name="description" content="Hourly range forecast for gold (XAU/USD) from a volatility model, with its full predicted-vs-actual track record.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Stack+Sans+Headline:wght@300&family=Stack+Sans+Text:wght@400;500&display=swap" rel="stylesheet">
@@ -107,9 +107,10 @@
       <div class="about-panel">
         <div class="about-block" data-reveal>
           <h2>The model</h2>
-          <p>A random forest predicts how far gold moves from 15 past the hour to its end, as a multiple of its first 15 minutes.
-            Test MAE 0.355 on the log scale (about ×1.43 on the multiple), R² 0.484, time-series splits with no look-ahead.
-            Trained 23 Oct 2026 on the 8:00 ET hour; every other hour here is an out-of-sample test.</p>
+          <p>A linear regression predicts how far gold moves from 15 past the hour to its end, as a multiple of its first 15 minutes.
+            Test MAE 0.302 on the log scale (about ×1.35 on the multiple), R² 0.627, time-series splits with no look-ahead.
+            Trained on the 8:00 ET hour; every other hour here is an out-of-sample test.</p>
+          <p>It replaced a random forest (test MAE 0.355, R² 0.484) on 10 Nov 2026, so forecasts before that date come from the forest.</p>
         </div>
         <div class="about-block" data-reveal>
           <h2>How it was built</h2>

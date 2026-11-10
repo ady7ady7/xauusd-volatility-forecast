@@ -182,6 +182,7 @@ tr.details dd { font-size: var(--step-small); }
 }
 .about h2 { font-size: var(--step-head); margin-bottom: 24px; }
 .about-block p { max-width: 34em; }
+.about-block p + p { margin-top: 16px; }
 .about .button { margin-top: 32px; }
 .about .button:hover { background: var(--field-ink); color: var(--ink); }
 
