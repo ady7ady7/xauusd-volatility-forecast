@@ -1,5 +1,6 @@
 import datetime as dt
 import os
+from pathlib import Path
 from zoneinfo import ZoneInfo
 
 import numpy as np
@@ -28,7 +29,7 @@ def get_recent_bars(symbol: str, interval: str) -> pd.DataFrame:
     response = requests.get('https://api.twelvedata.com/time_series', params={
         'symbol': symbol,
         'interval': interval,
-        'outputsize': 100,
+        'outputsize': 500,
         'timezone': 'America/New_York',
         'apikey': API_KEY
     })
@@ -98,18 +99,22 @@ def get_live_observation_features(data: pd.DataFrame) -> tuple[dict, float]:
     features for the current hour's observation window
     (XX:00-XX:15 ET, so the 3 M5 candles from XX:00, XX:05, XX:10).
 
+    Model features (LinReg, updated 10.11.2026):
+    log_power_obs, log_atr14_obs, center_of_mass_mean_observation,
+    log_parkinson_obs, log_har_d, is_cpi, is_nfp, is_thursday
+
     Returns a tuple of 2 things:
-    1. dict of calculated features ready for predictions, same keys
-       the model was trained on, e.g.
-       {'realized_power_observation': 0.0012,
-        'atr14_mean_observation': 2.85, ...,
-        'day_of_week': 3}  (0 = Monday)
+    1. dict of calculated features - the model's 8 plus a few extra
+       ones kept for the response (e.g. realized_power_observation,
+       needed for predicted power). predict_volatility picks the
+       model's columns by name, so extra keys don't matter.
     2. latest close as float, e.g. 3912.45 (as I need it for actual
        range predictions based on quantiles and range-per-point
        historical checks)
 
     Raises ValueError if there are no candles for the current hour yet
-    (market closed, weekend, holiday).
+    (market closed, weekend, holiday) or no previous-day candles for
+    log_har_d.
     '''
     data = data.sort_values('datetime').reset_index(drop=True)
     data['hour'] = pd.to_datetime(data['datetime']).dt.hour
@@ -133,6 +138,11 @@ def get_live_observation_features(data: pd.DataFrame) -> tuple[dict, float]:
     # realized_power
     data['ret_1bar'] = data['close'].pct_change()
     data['abs_ret_1bar'] = data['ret_1bar'].abs()
+
+    # Parkinson volatility - uses the high-low swing inside the bar,
+    # not only close-to-close
+    data['parkinson_volatility'] = (np.log(data['high'] / data['low']) ** 2
+                                    / (4 * np.log(2)))
 
     # atr14 (Wilder ATR, 14-period) - M5 file has no atr14 column,
     # built fresh here
@@ -189,7 +199,8 @@ def get_live_observation_features(data: pd.DataFrame) -> tuple[dict, float]:
         efficiency_ratio_10_observation=('efficiency_ratio_10', 'mean'),
         wtc_10_observation=('wtc_10', 'mean'),
         center_of_mass_mean_observation=('center_of_mass', 'mean'),
-        atr_trend_observation=('atr_trend', 'last')
+        atr_trend_observation=('atr_trend', 'last'),
+        parkinson_obs=('parkinson_volatility', 'sum')
     ).reset_index()
 
     if prediction_window.empty:
@@ -197,7 +208,50 @@ def get_live_observation_features(data: pd.DataFrame) -> tuple[dict, float]:
             f'No bars in the observation window for {current_date} '
             f'{current_hour}:00-{current_hour}:10 ET (market closed?)')
 
-    prediction_window_agg['day_of_week'] = current_date.weekday()
+    # logs - the linear model was trained on log features
+    prediction_window_agg['log_power_obs'] = np.log(
+        prediction_window_agg['realized_power_observation'])
+    prediction_window_agg['log_atr14_obs'] = np.log(
+        prediction_window_agg['atr14_mean_observation'])
+    prediction_window_agg['log_parkinson_obs'] = np.log(
+        prediction_window_agg['parkinson_obs'])
+
+    # log_har_d - power of the same hour's XX:15-XX:59 window on the
+    # previous trading day (on Monday that's Friday)
+    prev_window = data.loc[
+        (data['hour'] == current_hour) &
+        (data['minute'] >= 15) &
+        (data['trade_date'] < current_date)
+    ]
+    prev_date = prev_window['trade_date'].max()
+    har_d_power = prev_window.loc[prev_window['trade_date'] == prev_date,
+                                  'abs_ret_1bar'].sum()
+    if har_d_power == 0:
+        raise ValueError(
+            f'No previous-day bars for {current_hour}:15-{current_hour}:59 '
+            f'ET - cannot compute log_har_d')
+    prediction_window_agg['log_har_d'] = np.log(har_d_power)
+
+    # macro calendar flags - releases (and Thursday jobless claims) are
+    # at 8:30 ET; the model learned their effect only for the 8:15-9:00
+    # window (at other hours the effect is ~1.0x), so flags = 0 there
+    news_releases = pd.read_csv(Path(__file__).parent / 'macro_releases.csv')
+    news_releases['date'] = pd.to_datetime(news_releases['date'])
+    nfp_dates = news_releases.loc[news_releases['event'] == 'NFP', 'date']
+    cpi_dates = news_releases.loc[news_releases['event'] == 'CPI', 'date']
+    fomc_dates = news_releases.loc[news_releases['event'] == 'FOMC', 'date']
+
+    is_8am = int(current_hour == 8)
+    trade_date = pd.to_datetime(prediction_window_agg['trade_date'])
+    prediction_window_agg['day_of_week'] = trade_date.dt.day_of_week
+    prediction_window_agg['is_nfp'] = trade_date.isin(nfp_dates).astype(int) * is_8am
+    prediction_window_agg['is_cpi'] = trade_date.isin(cpi_dates).astype(int) * is_8am
+    # FOMC: no dates in macro_releases.csv yet and not in the model -
+    # always 0 for now
+    prediction_window_agg['is_fomc'] = trade_date.isin(fomc_dates).astype(int)
+    prediction_window_agg['is_thursday'] = (
+        (prediction_window_agg['day_of_week'] == 3).astype(int) * is_8am)
+
     prediction_window_agg = prediction_window_agg.drop(columns='trade_date')
     return (prediction_window_agg.iloc[0].to_dict(),
             prediction_window['close'].iloc[-1])
@@ -207,7 +261,7 @@ def get_previous_window_actuals(data: pd.DataFrame) -> dict:
     '''
     What actually happened in the PREVIOUS hour's prediction window
     (XX:15-XX+1:00 ET, 9 M5 bars).
-    The 100 fetched bars (~8h) already cover it, so no extra API call
+    The 500 fetched bars (~40h) already cover it, so no extra API call
     is needed. Used to pair each stored prediction with its realized
     outcome.
 

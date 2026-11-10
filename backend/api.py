@@ -54,15 +54,14 @@ app = FastAPI(lifespan=lifespan, docs_url=None, redoc_url=None,
 
 class ObservationFeatures(BaseModel):
     '''Observation features (as class attributes) the model expects.'''
-    realized_power_observation: float
-    atr14_mean_observation: float
-    otf_streak_observation: int
-    sjv_10_observation: float
-    efficiency_ratio_10_observation: float
-    wtc_10_observation: float
+    log_power_obs: float
+    log_atr14_obs: float
     center_of_mass_mean_observation: float
-    atr_trend_observation: int
-    day_of_week: int
+    log_parkinson_obs: float
+    log_har_d: float
+    is_cpi: int
+    is_nfp: int
+    is_thursday: int
 
 
 @app.get('/health')  # open, for Render's health check
