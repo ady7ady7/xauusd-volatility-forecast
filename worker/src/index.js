@@ -16,9 +16,32 @@ const INSTRUMENTS = [
   { symbol: 'XAUUSD', path: '/predict/live' },
 ];
 
+const MAX_ATTEMPTS = 4;
+const RETRY_DELAY_MS = 45_000;  // a scheduled Worker may run up to 15 min, so 3 waits fit easily
+
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+// 429 comes from in front of the backend (the app itself never returns it) - most likely a
+// rate limit on the shared Cloudflare egress IPs - so it's worth trying again a bit later.
+// Network errors are retried too. Any other status (e.g. 503 market closed) is a real answer.
+async function fetchWithRetry(url, options, symbol) {
+  for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+    try {
+      const res = await fetch(url, options);
+      if (res.status !== 429 || attempt === MAX_ATTEMPTS) return res;
+      console.warn(`${symbol}: 429 on attempt ${attempt}/${MAX_ATTEMPTS}, ` +
+        `server=${res.headers.get('server')}, retry-after=${res.headers.get('retry-after')}`);
+    } catch (e) {
+      if (attempt === MAX_ATTEMPTS) throw e;
+      console.warn(`${symbol}: network error on attempt ${attempt}/${MAX_ATTEMPTS}: ${e}`);
+    }
+    await sleep(RETRY_DELAY_MS);
+  }
+}
+
 async function runInstrument(env, { symbol, path }, hour) {
   // Render free tier may be asleep - the first request waits ~1 min for it to boot
-  const res = await fetch(`${env.BACKEND_URL}${path}`, { headers: { 'X-API-Key': env.BACKEND_KEY } });
+  const res = await fetchWithRetry(`${env.BACKEND_URL}${path}`, { headers: { 'X-API-Key': env.BACKEND_KEY } }, symbol);
   if (!res.ok) {
     console.error(`${symbol}: backend error ${res.status}: ${await res.text()}`);
     return;
