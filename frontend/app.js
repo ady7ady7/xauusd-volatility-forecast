@@ -98,8 +98,7 @@ function renderForecast(row) {
 }
 
 function renderSummary(s) {
-  const cells = { 's-fit-inner': s.range_fit_typical, 's-fit-outer': s.range_fit_wide,
-    's-inside-inner': s.inside_typical, 's-inside-outer': s.inside_wide };
+  const cells = { 's-fit-inner': s.range_fit_typical, 's-fit-outer': s.range_fit_wide };
   for (const [id, value] of Object.entries(cells)) {
     $(id).textContent = fmtPct(value);
   }

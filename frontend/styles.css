@@ -106,7 +106,7 @@ a:hover { color: var(--ink); }
 .r-needle { fill: var(--ink); }
 .r-actual { fill: var(--ink); }
 
-/* scorecard: one gold heading tile, four figures, one photograph */
+/* scorecard: one gold heading tile, two figures, one photograph across the full width */
 .scorecard {
   display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; margin-top: var(--section);
 }
@@ -115,8 +115,8 @@ a:hover { color: var(--ink); }
 .tile-head h2 { font-size: var(--step-head); }
 .tile-head p { max-width: 30em; }
 .tile-value { font-family: var(--font-display); font-weight: 300; font-size: var(--step-head); line-height: 1; letter-spacing: -0.02em; }
-.tile-photo { grid-column: span 2; padding: 0; position: relative; overflow: hidden; background: var(--ink); }
-.tile-photo img { width: 100%; height: 100%; object-fit: cover; position: absolute; inset: 0; filter: grayscale(1); }
+.tile-photo { grid-column: 1 / -1; min-height: 420px; padding: 0; position: relative; overflow: hidden; background: var(--ink); }
+.tile-photo img { width: 100%; height: 100%; object-fit: cover; position: absolute; inset: 0; filter: grayscale(1); transform: scale(1.04); } /* scale: crops the scan's own light and dark edges */
 .tile-photo figcaption { position: absolute; left: 0; bottom: 0; padding: 10px 16px; background: var(--bg); font-size: var(--step-small); }
 
 /* the picture band; its top edge is cut into the ruler's graduations */
